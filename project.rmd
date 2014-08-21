@@ -1,0 +1,116 @@
+---
+title: "Practical Machine Learning Project "
+output: html_document
+---
+
+```{r global_options, include=FALSE,echo=FALSE, warning=FALSE, message=FALSE, results='asis'}
+``` 
+
+```{r read, echo=FALSE}
+library(knitr)
+read_chunk('project2.R')
+``` 
+
+```{r setup,eval=TRUE,echo=FALSE, warning=FALSE, message=FALSE }
+<<initialisation>>
+```
+# I Background
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+The question is:
+Can we predict the appropriate activity quality (class A-E), based on recorded information ? 
+
+# II study
+## Data cleansing
+First, read the data and the description, examin it, do some cleaning.
+
+```{r cleansing,eval=TRUE,echo=TRUE , warning=FALSE, results='hide' ,message=FALSE}
+<<cleansing>>
+```
+
+classe function of 159 predictors
+19622 rows
+
+Some columns contain essentialy Na.
+Some lines are empy
+Some lines  contains DIV/0, replaced by Na.
+Do the cleaning, nb of usefull predictor reduced.
+```{r z2, eval=TRUE,echo=TRUE , warning=FALSE,message=FALSE}
+# remove near zero covariates 
+<<z2>>
+```
+Separate avalable data in a training set (70%) and a validation set (30%).
+the validation set will be used to evaluate out of sample error.
+
+# II Feature selection and model construction
+Referenced paper identifies folowing features:
+  The 12 features selected through this procedure were: 
+(1) Sensor on the Belt: discretization of the module of
+acceleration vector, variance of pitch, and variance of roll;  
+(2) Sensor on the leftthigh: module of acceleration vector, discretization, and 
+variance of pitch;  
+(3) Sensor on the right ankle: variance of pitch, and variance of roll;  
+(4) Sensor on the right arm: discretization of the module of acceleration vector;  
+From all sensors: average acceleration and standard deviation of acceleration.
+
+To optimize the computation time, take advantage of the parallel computing. The code is run in a multi-core machine, so we allow it to use up to the total number of cores - 1. 
+(suppressed, not working)
+
+## Apply random forests algorithm, with 15 fold cross validation:
+Random forests are a good candidate when number of predictors is large, and influential predictors are unknown.
+choice could be reconsidered if accuracy is low.
+```{r train, eval=FALSE ,echo=TRUE , warning=FALSE, message=FALSE}
+<<train>>
+```
+```{r influential,eval=TRUE,echo=TRUE , warning=FALSE, message=FALSE }
+<<influential>>
+```
+
+## Overall accuracy:
+Final model confusion matrix, showing good and false predictions:
+```{r confusion, eval=TRUE,echo=TRUE ,warning=FALSE,message=FALSE,cache=FALSE} 
+<<confusion>>
+```
+The random forests algorithm generated a very accurate model with __accuracy close to 1__. 
+as we see from the plots.(Error 0.75%)                    
+We keep this approch to continue the study.
+
+## Out of Sample Error: 
+```{r plotoutsampleerror , eval=TRUE,echo=TRUE , warning=FALSE,message=FALSE} 
+<<plotoutsampleerror>>
+
+``` 
+
+The Out of Sample error calculated on the test set is `r round(outOfSampleError,2)` % 
+
+## Prepare predictions for testing data
+```{r prediction,eval=TRUE,echo=TRUE , warning=FALSE,message=FALSE} 
+<<prediction>>
+``` 
+# III Figures 
+
+The next figure shows the importance measures for the top 20 attributes, in decreasing order of importance for each class. 
+
+
+```{r plotimpvar, eval=TRUE,echo=TRUE , warning=FALSE,message=FALSE} 
+<<plotimpvar>>
+``` 
+
+The next plot shows accuracy function of the predictors
+```{r rf_plot,eval=TRUE,echo=TRUE , warning=FALSE,message=FALSE} 
+<<plotaccuracy>>
+``` 
+
+The next plot shows the error rates vs number of trees for each class. As the number of trees increases the error rates decrease. The number of trees used in the analysis is 500. 
+```{r ploterrorrates, eval=TRUE,echo=TRUE , warning=FALSE,message=FALSE} 
+<<Ploterrorrates>>
+``` 
+
+# IV Prepare results for online automated evaluation
+
+Write prediction files 
+```{r results, eval=TRUE,echo=TRUE , warning=FALSE,message=FALSE} 
+<<onlineeval>>
+
+``` 
+
